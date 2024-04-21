@@ -44,7 +44,7 @@
     <h1>Select a Folder</h1>
     <div class="folder-container">
         {% for folder in folders %}
-            <a href="{{ url_for('label_folder', folder=folder, image_name=folder|first) }}" class="folder">
+            <a href="{{ url_for('label_folder', folder=folder) }}" class="folder">
                 <span>{{ folder }}</span>
             </a>
         {% endfor %}

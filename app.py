@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, request, session
 from flask_wtf import FlaskForm
 from wtforms import SelectField, SubmitField
 from flask_uploads import UploadSet, configure_uploads, IMAGES
@@ -72,22 +72,17 @@ def label_folder(folder):
         return render_template('unlabeled.html')
 
     image_name = unlabeled_images[0]
-    form = LabelingForm()
-
     image_path = f'uploads/{folder}/{image_name}'
     annotation_path = f'uploads/{folder}/{os.path.splitext(image_name)[0]}.txt'
 
     annotated_image = cv2.imread(image_path)
     original_height, original_width = annotated_image.shape[:2]
 
-    annotated_image = resize_image(annotated_image)
-    resized_height, resized_width = annotated_image.shape[:2]
-
     with open(annotation_path, 'r') as f:
         annotations = f.readlines()
 
-    upper_xy = []
-    lower_xy = []
+    upper_label_xy = None
+    lower_label_xy = None
 
     for annotation in annotations:
         class_id, x_center, y_center, width, height = map(float, annotation.split())
@@ -96,47 +91,29 @@ def label_folder(folder):
         x2 = int((x_center + width / 2) * original_width)
         y2 = int((y_center + height / 2) * original_height)
 
+        if upper_label_xy is None or y1 < upper_label_xy[1]:
+            upper_label_xy = [x1, y1, x2, y2]
+        else:
+            lower_label_xy = [x1, y1, x2, y2]
+
+    annotated_image = resize_image(annotated_image)
+    resized_height, resized_width = annotated_image.shape[:2]
+
+    if upper_label_xy is not None:
+        x1, y1, x2, y2 = upper_label_xy
         x1_resized = int(x1 * resized_width / original_width)
         y1_resized = int(y1 * resized_height / original_height)
         x2_resized = int(x2 * resized_width / original_width)
         y2_resized = int(y2 * resized_height / original_height)
-
-        if len(upper_xy) == 0 or y1_resized < upper_xy[1]:
-            upper_xy = [x1_resized, y1_resized, x2_resized, y2_resized]
-        else:
-            lower_xy = [x1_resized, y1_resized, x2_resized, y2_resized]
-
         cv2.rectangle(annotated_image, (x1_resized, y1_resized), (x2_resized, y2_resized), (0, 255, 0), 2)
 
-    if not upper_xy:
-        upper_xy = [0, 0, 0, 0]
-    if not lower_xy:
-        lower_xy = [0, 0, 0, 0]
-
-    if form.validate_on_submit():
-        if form.skip.data:
-            data = {'image_name': image_name}
-            df_skipped = pd.DataFrame([data])
-            df_skipped.to_csv(f'uploads/{folder}/skipped.csv', mode='a', header=not os.path.exists(f'uploads/{folder}/skipped.csv'), index=False)
-        else:
-            data = {
-                'image_name': image_name,
-                'upper_label': form.upper_label.data,
-                'lower_label': form.lower_label.data,
-                'shoe_label': form.shoe_label.data,
-                'upper_x': upper_xy[0],
-                'upper_y': upper_xy[1],
-                'upper_width': upper_xy[2] - upper_xy[0],
-                'upper_height': upper_xy[3] - upper_xy[1],
-                'lower_x': lower_xy[0],
-                'lower_y': lower_xy[1],
-                'lower_width': lower_xy[2] - lower_xy[0],
-                'lower_height': lower_xy[3] - lower_xy[1]
-            }
-            df = pd.DataFrame([data])
-            df.to_csv(f'uploads/{folder}/labels.csv', mode='a', header=not os.path.exists(f'uploads/{folder}/labels.csv'), index=False)
-
-        return redirect(url_for('label_folder', folder=folder))
+    if lower_label_xy is not None:
+        x1, y1, x2, y2 = lower_label_xy
+        x1_resized = int(x1 * resized_width / original_width)
+        y1_resized = int(y1 * resized_height / original_height)
+        x2_resized = int(x2 * resized_width / original_width)
+        y2_resized = int(y2 * resized_height / original_height)
+        cv2.rectangle(annotated_image, (x1_resized, y1_resized), (x2_resized, y2_resized), (0, 255, 0), 2)
 
     _, file_extension = os.path.splitext(image_name)
     file_extension = file_extension.lower()
@@ -151,8 +128,50 @@ def label_folder(folder):
 
     image_base64 = base64.b64encode(buffer).decode('utf-8')
 
-    return render_template('label.html', form=form, image=image_base64, image_name=image_name,
-                           upper_xy=upper_xy, lower_xy=lower_xy)
+    if request.method == 'POST':
+        if 'skip' in request.form:
+            data = {'image_name': image_name}
+            df_skipped = pd.DataFrame([data])
+            df_skipped.to_csv(f'uploads/{folder}/skipped.csv', mode='a', header=not os.path.exists(f'uploads/{folder}/skipped.csv'), index=False)
+            session.clear()
+            return redirect(url_for('label_folder', folder=folder))
+
+        choice = request.form['choice']
+        if 'upper_label' not in session:
+            session['upper_label'] = choice
+            question = 'Select the lower cloth:'
+            choices = ['Trousers', 'Shorts', 'Skirt']
+        elif 'lower_label' not in session:
+            session['lower_label'] = choice
+            question = 'Select the shoes:'
+            choices = ['Sandals', 'Sneakers', 'High heels', 'Leather shoes', 'None']
+        else:
+            session['shoe_label'] = choice
+            data = {
+                'image_name': image_name,
+                'upper_label': session['upper_label'],
+                'lower_label': session['lower_label'],
+                'shoe_label': session['shoe_label'],
+                'upper_label_x': upper_label_xy[0] if upper_label_xy else '',
+                'upper_label_y': upper_label_xy[1] if upper_label_xy else '',
+                'upper_label_width': upper_label_xy[2] - upper_label_xy[0] if upper_label_xy else '',
+                'upper_label_height': upper_label_xy[3] - upper_label_xy[1] if upper_label_xy else '',
+                'lower_label_x': lower_label_xy[0] if lower_label_xy else '',
+                'lower_label_y': lower_label_xy[1] if lower_label_xy else '',
+                'lower_label_width': lower_label_xy[2] - lower_label_xy[0] if lower_label_xy else '',
+                'lower_label_height': lower_label_xy[3] - lower_label_xy[1] if lower_label_xy else ''
+            }
+            df = pd.DataFrame([data])
+            df.to_csv(f'uploads/{folder}/labels.csv', mode='a', header=not os.path.exists(f'uploads/{folder}/labels.csv'), index=False)
+            session.clear()
+            return redirect(url_for('label_folder', folder=folder))
+    else:
+        session.clear()
+        question = 'Select the upper cloth:'
+        choices = ['Polo', 'Long sleeve T-shirt', 'Long sleeve shirt', 'Short sleeve Shirt', 'Short sleeve T-shirt',
+                   'Sleeveless', 'Long sleeve blouse', 'Short sleeve blouse', 'Dress', 'Outwear']
+
+    return render_template('label.html', image=image_base64, question=question, choices=choices)
 
 
 def resize_image(image, max_width=800, max_height=400):

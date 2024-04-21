@@ -39,6 +39,14 @@
         .choice:hover {
             background-color: #45a049;
         }
+
+        .skip {
+            background-color: #f44336;
+        }
+        .skip:hover {
+            background-color: red;
+        }
+
     </style>
 </head>
 <body>
@@ -51,6 +59,7 @@
                 {% for choice in choices %}
                     <button type="submit" name="choice" value="{{ choice }}" class="choice">{{ choice }}</button>
                 {% endfor %}
+                <button type="submit" name="skip" value="skip" class="choice skip">skip</button>
             </div>
         </div>
     </form>

@@ -1,5 +1,13 @@
 {
-  
+  "builds": [
+    {
+      "src": "app.py",
+      "config": {
+        "runtime": "python3.9"
+      },
+      "use": "@now/python"
+    }
+  ],
   "routes": [
     {
       "src": "/(.*)",

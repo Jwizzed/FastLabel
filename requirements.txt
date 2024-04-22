@@ -1,8 +1,7 @@
 Flask-Uploads
 flask-wtf
 flask
-# opencv-python-headless
+opencv-python-headless
 pandas
 supervision
-opencv-python
 gunicorn

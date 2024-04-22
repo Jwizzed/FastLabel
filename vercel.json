@@ -5,7 +5,7 @@
       "config": {
         "runtime": "python3.9"
       },
-      "use": "@now/python"
+      "use": "@vercel/python"
     }
   ],
   "routes": [

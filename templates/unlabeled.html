@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title><a href="{{ url_for('index') }}" style="color: #3A7734; text-decoration: none;">Image Labeling</a></title>
+    <title><a href="{{ url_for('main.index') }}" style="color: #3A7734; text-decoration: none;">Image Labeling</a></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,8 +35,8 @@
     </style>
 </head>
 <body>
-    <h1><a href="{{ url_for('index') }}">Image Labeling</a></h1>
+    <h1><a href="{{ url_for('main.index') }}">Image Labeling</a></h1>
     <div class="message">All images in this folder have been labeled or skipped.</div>
-    <a href="{{ url_for('index') }}" class="button">Go to Home</a>
+    <a href="{{ url_for('main.index') }}" class="button">Go to Home</a>
 </body>
 </html>

@@ -16,6 +16,7 @@ class Annotation(db.Model):
 
 class Label(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    image_id = db.Column(db.Integer, db.ForeignKey('image.id'))
     annotation_id = db.Column(db.Integer, db.ForeignKey('annotation.id'))
     annotation = db.relationship('Annotation', backref=db.backref('labels', lazy=True))
     upper_label = db.Column(db.String(100))

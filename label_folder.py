@@ -7,21 +7,16 @@ from app import db
 
 main = Blueprint('main', __name__)
 
-
 @main.route('/')
 def index():
     return redirect(url_for('main.label_images'))
 
-
 @main.route('/label', methods=['GET', 'POST'])
 def label_images():
     image = Image.query \
-        .select_from(Image) \
-        .outerjoin(Annotation, Image.id == Annotation.image_id) \
-        .outerjoin(Label, Annotation.id == Label.annotation_id) \
         .outerjoin(SkippedImage, Image.id == SkippedImage.image_id) \
-        .filter(Label.id.is_(None)) \
-        .filter(SkippedImage.id.is_(None)).first()
+        .filter(SkippedImage.id.is_(None)) \
+        .first()
 
     if not image:
         return render_template('unlabeled.html')
@@ -30,14 +25,15 @@ def label_images():
                               cv2.IMREAD_COLOR)
     annotated_image = image_data.copy()
     original_height, original_width = annotated_image.shape[:2]
-
-    annotations = [ann.annotation_data for ann in image.annotations]
+    annotations = Annotation.query.filter_by(image_id=image.id).all()
+    print("DEBUG:")
+    print(annotations)
 
     upper_label_xy = None
     lower_label_xy = None
 
     for set_annotation in annotations:
-        for annotation in set_annotation.split("\n")[:-1]:
+        for annotation in set_annotation.annotation_data.split("\n")[:-1]:
             class_id, x_center, y_center, width, height = map(float, annotation.split())
             x1 = int((x_center - width / 2) * original_width)
             y1 = int((y_center - height / 2) * original_height)

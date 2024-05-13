@@ -6,5 +6,12 @@ def create_database():
         db.create_all()
 
 
+def reset_database():
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+        print("Database has been reset and new tables have been created.")
+
+
 if __name__ == '__main__':
-    create_database()
+    reset_database()

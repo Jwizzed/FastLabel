@@ -7,15 +7,19 @@ from app import db
 
 main = Blueprint('main', __name__)
 
+
 @main.route('/')
 def index():
     return redirect(url_for('main.label_images'))
+
 
 @main.route('/label', methods=['GET', 'POST'])
 def label_images():
     image = Image.query \
         .outerjoin(SkippedImage, Image.id == SkippedImage.image_id) \
         .filter(SkippedImage.id.is_(None)) \
+        .outerjoin(Label, Image.id == Label.image_id) \
+        .filter(Label.id.is_(None)) \
         .first()
 
     if not image:
@@ -26,8 +30,6 @@ def label_images():
     annotated_image = image_data.copy()
     original_height, original_width = annotated_image.shape[:2]
     annotations = Annotation.query.filter_by(image_id=image.id).all()
-    print("DEBUG:")
-    print(annotations)
 
     upper_label_xy = None
     lower_label_xy = None
@@ -113,6 +115,7 @@ def save_labels_to_db(image, session_info, upper_label_xy, lower_label_xy):
         lower_label_width=lower_label_xy[2] - lower_label_xy[0] if lower_label_xy else None,
         lower_label_height=lower_label_xy[3] - lower_label_xy[1] if lower_label_xy else None
     )
+    print("Saved label")
     db.session.add(label)
     db.session.commit()
 

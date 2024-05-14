@@ -124,7 +124,6 @@ def get_label_questions():
 
 
 def process_label_form(request, image, upper_label_xy, lower_label_xy):
-    choice = request.form['choice']
     if 'skip' in request.form:
         skipped_image = SkippedImage(image_id=image.id)
         db.session.add(skipped_image)
@@ -132,18 +131,18 @@ def process_label_form(request, image, upper_label_xy, lower_label_xy):
         session.clear()
         return redirect(url_for('main.label_images'))
 
-    if 'upper_label' not in session:
-        print("In upper, choice:", choice)
-        session['upper_label'] = choice
-    elif 'lower_label' not in session:
-        print("In lower, choice:", choice)
-        session['lower_label'] = choice
-    else:
-        print("In shoe, choice:", choice)
-        session['shoe_label'] = choice
-        save_labels_to_db(image, session, upper_label_xy, lower_label_xy)
-        session.clear()
-        return redirect(url_for('main.label_images'))
+    choice = request.form['choice']
+    if choice:
+        if 'upper_label' not in session:
+            session['upper_label'] = choice
+        elif 'lower_label' not in session:
+            session['lower_label'] = choice
+        else:
+            session['shoe_label'] = choice
+            save_labels_to_db(image, session, upper_label_xy, lower_label_xy)
+            session.clear()
+            return redirect(url_for('main.label_images'))
+    return None
 
 
 def save_labels_to_db(image, session_info, upper_label_xy, lower_label_xy):

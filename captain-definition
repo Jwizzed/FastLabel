@@ -2,8 +2,9 @@
   "schemaVersion": 2,
   "dockerfileLines": [
                         "FROM python:3.13-rc-alpine",
-                        "RUN ls -a",
-                        "RUN pwd",
+                        "RUN mkdir -p /usr/src/app",
+                        "COPY ./src /app",
+                        "WORKDIR /app",
                         "RUN pip3 install -r requirements.txt",
                         "CMD [ \"python3\", \"run.py\" ]",
                         "EXPOSE 80 81"

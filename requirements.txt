@@ -1,4 +1,4 @@
-psycopg2-binary
+psycopg2-binary>=2.9.9
 pandas>=2.2.2
 Flask-Uploads>=0.2.1
 flask-wtf>=1.2.1

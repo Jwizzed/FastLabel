@@ -2,11 +2,11 @@
   "schemaVersion": 2,
   "dockerfileLines": [
                         "FROM python:3.13-rc-alpine",
-                        "RUN apk update && apk upgrade && apk add --no-cache musl-dev cc gcc clang nvc pgcc icc icx",
+                        "RUN apk update && apk upgrade && apk add --no-cache musl-dev",
                         "RUN mkdir -p /usr/src/app",
                         "WORKDIR /usr/src/app",
                         "COPY ./requirements.txt /usr/src/app/",
-                        "RUN pip3 install --no-cache-dir -r requirements.txt",
+                        "RUN pip install --no-cache-dir -r requirements.txt",
                         "COPY ./ /usr/src/app",
                         "CMD [ \"python3\", \"run.py\" ]"
                     ]

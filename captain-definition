@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "dockerfileLines": [
                         "FROM python:3.13-rc-alpine",
-                        "RUN apk update && apk upgrade && apk add --no-cache musl-dev alpine-sdk gcc python3-dev linux-headers",
+                        "RUN apk update && apk upgrade && apk add --no-cache musl-dev alpine-sdk gcc python3-dev linux-headers cmake build-base",
                         "RUN mkdir -p /usr/src/app",
                         "WORKDIR /usr/src/app",
                         "COPY ./requirements.txt /usr/src/app/",

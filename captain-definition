@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "dockerfileLines": [
                         "FROM python:3.13-rc-slim",
-                        "RUN apt update && apt upgrade && apt install -y build-essential python3-dev libpq-dev",
+                        "RUN apt update && apt upgrade && apt install -y git curl jq file unzip make gcc g++ libtool build-essential python3-dev libpq-dev",
                         "RUN mkdir -p /usr/src/app",
                         "WORKDIR /usr/src/app",
                         "COPY ./requirements.txt /usr/src/app/",

@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "dockerfileLines": [
                         "FROM python:3.13-rc-slim",
-                        "RUN apt update && apt upgrade && apt install musl-dev -y",
+                        "RUN apt update && apt upgrade && apt install build-essential -y",
                         "RUN mkdir -p /usr/src/app",
                         "WORKDIR /usr/src/app",
                         "COPY ./requirements.txt /usr/src/app/",

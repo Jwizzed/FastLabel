@@ -1,4 +1,12 @@
  {
   "schemaVersion": 2,
-  "templateId": "python-django/rc"
+  "dockerfileLines": [
+                        "FROM python:3.7.0-alpine",
+                        "COPY ./src /app",
+		                        "WORKDIR /app",
+		                        "RUN ls -a",
+		                        "RUN pip3 install -r requirements.txt",
+		                        "CMD [ \"python3\", \"run.py\" ]",
+		                        "EXPOSE 80 81"
+  ]
  }

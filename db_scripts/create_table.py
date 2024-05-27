@@ -28,26 +28,26 @@ def export_data_to_csv():
             writer = csv.writer(file)
 
             writer.writerow(
-                ['image_id', 'upper_label', 'lower_label', 'shoe_label',
-                 'upper_label_x', 'upper_label_y', 'upper_label_width',
-                 'upper_label_height',
-                 'lower_label_x', 'lower_label_y', 'lower_label_width',
-                 'lower_label_height'])
+                ['image_id', 'age', 'gender', 'hair_length',
+                 'upper_body_length', 'upper_body_color', 'lower_body_length',
+                 'lower_body_color',
+                 'lower_body_type', 'backpack', 'bag',
+                 'glasses', 'hat'])
 
             labels = Label.query.join(Image, Label.image_id == Image.id).all()
 
             for label in labels:
                 writer.writerow([
-                    label.image_id, label.upper_label, label.lower_label,
-                    label.shoe_label,
-                    label.upper_label_x, label.upper_label_y,
-                    label.upper_label_width, label.upper_label_height,
-                    label.lower_label_x, label.lower_label_y,
-                    label.lower_label_width, label.lower_label_height
+                    label.image_id, label.age, label.gender,
+                    label.hair_length,
+                    label.upper_body_length, label.upper_body_color,
+                    label.lower_body_length, label.lower_body_color,
+                    label.lower_body_type, label.backpack,
+                    label.bag, label.glasses, label.hat
                 ])
 
 
 if __name__ == '__main__':
-    reset_database()
-    # export_data_to_csv()
+    # reset_database()
+    export_data_to_csv()
 

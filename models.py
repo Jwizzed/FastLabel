@@ -7,29 +7,43 @@ class Image(db.Model):
     image_data = db.Column(db.LargeBinary)
 
 
-class Annotation(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    image_id = db.Column(db.Integer, db.ForeignKey('image.id'))
-    image = db.relationship('Image', backref=db.backref('annotations', lazy='dynamic'))
-    annotation_data = db.Column(db.Text)
+# class Annotation(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     image_id = db.Column(db.Integer, db.ForeignKey('image.id'))
+#     image = db.relationship('Image', backref=db.backref('annotations', lazy='dynamic'))
+#     annotation_data = db.Column(db.Text)
 
 
 class Label(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'))
-    annotation_id = db.Column(db.Integer, db.ForeignKey('annotation.id'))
-    annotation = db.relationship('Annotation', backref=db.backref('labels', lazy=True))
-    upper_label = db.Column(db.String(100))
-    lower_label = db.Column(db.String(100))
-    shoe_label = db.Column(db.String(100))
-    upper_label_x = db.Column(db.Integer)
-    upper_label_y = db.Column(db.Integer)
-    upper_label_width = db.Column(db.Integer)
-    upper_label_height = db.Column(db.Integer)
-    lower_label_x = db.Column(db.Integer)
-    lower_label_y = db.Column(db.Integer)
-    lower_label_width = db.Column(db.Integer)
-    lower_label_height = db.Column(db.Integer)
+
+    age = db.Column(db.String(100))
+    gender = db.Column(db.String(100))
+    hair_length = db.Column(db.String(100))
+    upper_body_length = db.Column(db.String(100))
+    upper_body_color = db.Column(db.String(100))
+    lower_body_length = db.Column(db.String(100))
+    lower_body_color = db.Column(db.String(100))
+    lower_body_type = db.Column(db.String(100))
+    backpack = db.Column(db.String(1))
+    bag = db.Column(db.String(1))
+    glasses = db.Column(db.String(100))
+    hat = db.Column(db.String(1))
+
+    # annotation_id = db.Column(db.Integer, db.ForeignKey('annotation.id'))
+    # annotation = db.relationship('Annotation', backref=db.backref('labels', lazy=True))
+    # upper_label = db.Column(db.String(100))
+    # lower_label = db.Column(db.String(100))
+    # shoe_label = db.Column(db.String(100))
+    # upper_label_x = db.Column(db.Integer)
+    # upper_label_y = db.Column(db.Integer)
+    # upper_label_width = db.Column(db.Integer)
+    # upper_label_height = db.Column(db.Integer)
+    # lower_label_x = db.Column(db.Integer)
+    # lower_label_y = db.Column(db.Integer)
+    # lower_label_width = db.Column(db.Integer)
+    # lower_label_height = db.Column(db.Integer)
 
 
 class SkippedImage(db.Model):

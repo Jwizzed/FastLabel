@@ -1,7 +1,7 @@
 import csv
 from app import app, db
+from sqlalchemy import text
 from models import Image, Label
-
 
 
 def create_database():
@@ -11,7 +11,11 @@ def create_database():
 
 def reset_database():
     with app.app_context():
-        db.drop_all()
+        db.session.execute(text('DROP TABLE IF EXISTS annotation CASCADE;'))
+        db.session.execute(text('DROP TABLE IF EXISTS label CASCADE;'))  # Add this if 'label' also depends on 'image'
+        db.session.execute(text('DROP TABLE IF EXISTS skipped_image CASCADE;'))  # Assuming 'skipped_image' might also depend on 'image'
+        db.session.execute(text('DROP TABLE IF EXISTS image CASCADE;'))  # Now safe to drop 'image'
+        db.session.commit()
         db.create_all()
         print("Database has been reset and new tables have been created.")
 
@@ -44,6 +48,6 @@ def export_data_to_csv():
 
 
 if __name__ == '__main__':
-    # reset_database()
-    export_data_to_csv()
+    reset_database()
+    # export_data_to_csv()
 

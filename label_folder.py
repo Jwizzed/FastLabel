@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, request, session
-from models import Image, Label, SkippedImage, Annotation
+from models import Image, Label, SkippedImage  #, Annotation
 from sqlalchemy.sql.expression import func
 import cv2
 import numpy as np
@@ -7,6 +7,25 @@ import base64
 from app import db
 
 main = Blueprint('main', __name__)
+
+
+def initialize_label_questions():
+    questions = [
+        ('age', 'Select the age group:', ['Young', 'Adult', 'Old']),
+        ('gender', 'Select the gender:', ['Male', 'Female']),
+        ('hair_length', 'Select hair length:', ['Short', 'Bald', 'Long']),
+        ('upper_body_length', 'Select the upper body cloth length:', ['Short', 'Long']),
+        ('upper_body_color', 'Select the upper body color:', ['Black', 'Blue', 'Brown', 'Green', 'Grey', 'Orange', 'Pink', 'Purple', 'Red', 'White', 'Yellow', 'Other']),
+        ('lower_body_length', 'Select the lower body cloth length:', ['Short', 'Long']),
+        ('lower_body_color', 'Select the lower body color:', ['Black', 'Blue', 'Brown', 'Green', 'Grey', 'Orange', 'Pink', 'Purple', 'Red', 'White', 'Yellow', 'Other']),
+        ('lower_body_type', 'Select the lower body type:', ['Trousers&Shorts', 'Skirt&Dress']),
+        ('backpack', 'Does the person have a backpack?', ['Yes', 'No']),
+        ('bag', 'Does the person have a bag?', ['Yes', 'No']),
+        ('glasses', 'Does the person wear glasses?', ['Normal', 'Sun', 'No']),
+        ('hat', 'Does the person wear a hat?', ['Yes', 'No'])
+    ]
+    session['questions'] = questions
+    session['current_question'] = 0
 
 
 @main.route('/')
@@ -23,47 +42,14 @@ def label_images():
         image = Image.query.order_by(func.random()).first()
         if image:
             session['image_id'] = image.id
+            initialize_label_questions()
 
     if not image:
         session.pop('image_id', None)
         return render_template('unlabeled.html')
 
-    image_data = cv2.imdecode(np.frombuffer(image.image_data, np.uint8),
-                              cv2.IMREAD_COLOR)
-    annotated_image = image_data.copy()
-    original_height, original_width = annotated_image.shape[:2]
-    annotations = Annotation.query.filter_by(image_id=image.id).all()
-
-    upper_label_xy = None
-    lower_label_xy = None
-
-    for set_annotation in annotations:
-        for annotation in set_annotation.annotation_data.split("\n")[:-1]:
-            class_id, x_center, y_center, width, height = map(float, annotation.split())
-            x1 = int((x_center - width / 2) * original_width)
-            y1 = int((y_center - height / 2) * original_height)
-            x2 = int((x_center + width / 2) * original_width)
-            y2 = int((y_center + height / 2) * original_height)
-
-            if upper_label_xy is None or y1 < upper_label_xy[1]:
-                upper_label_xy = [x1, y1, x2, y2]
-            else:
-                lower_label_xy = [x1, y1, x2, y2]
-
-    annotated_image = resize_image(annotated_image)
-    resized_height, resized_width = annotated_image.shape[:2]
-
-    for label_xy in [upper_label_xy, lower_label_xy]:
-        if label_xy:
-            x1, y1, x2, y2 = label_xy
-            x1_resized = int(x1 * resized_width / original_width)
-            y1_resized = int(y1 * resized_height / original_height)
-            x2_resized = int(x2 * resized_width / original_width)
-            y2_resized = int(y2 * resized_height / original_height)
-            cv2.rectangle(annotated_image, (x1_resized, y1_resized), (x2_resized, y2_resized), (0, 255, 0), 2)
-
     if request.method == 'POST':
-        response = process_label_form(request, image, upper_label_xy, lower_label_xy)
+        response = process_label_form(request, image)
         if response:
             return response
 
@@ -73,29 +59,7 @@ def label_images():
 def render_current_image(image):
     image_data = cv2.imdecode(np.frombuffer(image.image_data, np.uint8), cv2.IMREAD_COLOR)
     annotated_image = image_data.copy()
-    original_height, original_width = annotated_image.shape[:2]
-
-    annotations = Annotation.query.filter_by(image_id=image.id).all()
-    upper_label_xy = None
-    lower_label_xy = None
-
-    for set_annotation in annotations:
-        for annotation in set_annotation.annotation_data.split("\n"):
-            if annotation.strip():  # Ensure the annotation line is not empty
-                class_id, x_center, y_center, width, height = map(float, annotation.split())
-                x1 = int((x_center - width / 2) * original_width)
-                y1 = int((y_center - height / 2) * original_height)
-                x2 = int((x_center + width / 2) * original_width)
-                y2 = int((y_center + height / 2) * original_height)
-
-                if upper_label_xy is None or y1 < upper_label_xy[1]:
-                    upper_label_xy = [x1, y1, x2, y2]
-                else:
-                    lower_label_xy = [x1, y1, x2, y2]
-
     annotated_image = resize_image(annotated_image, 800, 400)
-    draw_annotations(annotated_image, upper_label_xy, lower_label_xy, original_width, original_height)
-
     question, choices = get_label_questions()
     encoded_image = base64.b64encode(cv2.imencode('.jpg', annotated_image)[1]).decode('utf-8')
     return render_template('label.html', image=encoded_image, question=question, choices=choices)
@@ -114,16 +78,16 @@ def draw_annotations(image, upper_label_xy, lower_label_xy, original_width, orig
 
 
 def get_label_questions():
-    if 'upper_label' not in session:
-        return 'Select the upper cloth:', ['Polo', 'Long sleeve T-shirt', 'Long sleeve shirt', 'Short sleeve Shirt', 'Short sleeve T-shirt',
-                                           'Sleeveless', 'Long sleeve blouse', 'Short sleeve blouse', 'Dress', 'Outwear']
-    elif 'lower_label' not in session:
-        return 'Select the lower cloth:', ['Trousers', 'Shorts', 'Skirt']
-    else:
-        return 'Select the shoes:', ['Sandals', 'Sneakers', 'High heels', 'Leather shoes', 'None']
+    if 'current_question' in session:
+        question_index = session['current_question']
+        questions = session['questions']
+        if question_index < len(questions):
+            attr, question, choices = questions[question_index]
+            return question, choices
+    return None, []
 
 
-def process_label_form(request, image, upper_label_xy, lower_label_xy):
+def process_label_form(request, image):
     if 'skip' in request.form:
         skipped_image = SkippedImage(image_id=image.id)
         db.session.add(skipped_image)
@@ -131,36 +95,34 @@ def process_label_form(request, image, upper_label_xy, lower_label_xy):
         session.clear()
         return redirect(url_for('main.label_images'))
 
-    choice = request.form['choice']
+    choice = request.form.get('choice')
     if choice:
-        if 'upper_label' not in session:
-            session['upper_label'] = choice
-        elif 'lower_label' not in session:
-            session['lower_label'] = choice
-        else:
-            session['shoe_label'] = choice
-            save_labels_to_db(image, session, upper_label_xy, lower_label_xy)
+        attr, _, _ = session['questions'][session['current_question']]
+        session[attr] = choice
+        session['current_question'] += 1
+
+        if session['current_question'] >= len(session['questions']):
+            save_labels_to_db(image, session)
             session.clear()
             return redirect(url_for('main.label_images'))
-    return None
 
 
-def save_labels_to_db(image, session_info, upper_label_xy, lower_label_xy):
+def save_labels_to_db(image, session_info):
     label = Label(
         image_id=image.id,
-        upper_label=session_info['upper_label'],
-        lower_label=session_info['lower_label'],
-        shoe_label=session_info['shoe_label'],
-        upper_label_x=upper_label_xy[0] if upper_label_xy else None,
-        upper_label_y=upper_label_xy[1] if upper_label_xy else None,
-        upper_label_width=upper_label_xy[2] - upper_label_xy[0] if upper_label_xy else None,
-        upper_label_height=upper_label_xy[3] - upper_label_xy[1] if upper_label_xy else None,
-        lower_label_x=lower_label_xy[0] if lower_label_xy else None,
-        lower_label_y=lower_label_xy[1] if lower_label_xy else None,
-        lower_label_width=lower_label_xy[2] - lower_label_xy[0] if lower_label_xy else None,
-        lower_label_height=lower_label_xy[3] - lower_label_xy[1] if lower_label_xy else None
+        age=session_info['age'],
+        gender=session_info['gender'],
+        hair_length=session_info['hair_length'],
+        upper_body_length=session_info['upper_body_length'],
+        upper_body_color=session_info['upper_body_color'],
+        lower_body_length=session_info['lower_body_length'],
+        lower_body_color=session_info['lower_body_color'],
+        lower_body_type=session_info['lower_body_type'],
+        backpack=session_info['backpack'].replace("Yes", "1").replace("No", "0"),
+        bag=session_info['bag'].replace("Yes", "1").replace("No", "0"),
+        glasses=session_info['glasses'],
+        hat=session_info['hat'].replace("Yes", "1").replace("No", "0")
     )
-    print("Saved label, upper:", session_info["upper_label"], "lower:", session_info["lower_label"])
     db.session.add(label)
     db.session.commit()
 

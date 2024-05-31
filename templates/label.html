@@ -14,7 +14,13 @@
             justify-content: center;
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
-            overflow: hidden; /* Prevents scrolling */
+            overflow-y: auto; /* Make the page scrollable if it overflows */
+        }
+        .content {
+            margin-top: 20px; /* Add margin to prevent overlap with the button */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         h1 {
             margin-top: 2vh; /* Adjust top margin to be minimal */
@@ -60,6 +66,23 @@
         .skip:hover {
             background-color: red;
         }
+        .nav-buttons {
+            margin-top: 20px; /* Add some space above the navigation buttons */
+            display: flex;
+            gap: 10px;
+        }
+        .nav-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            background-color: #2196F3;
+            transition: background-color 0.3s ease;
+        }
+        .nav-button:hover {
+            background-color: #0b7dda;
+        }
         @media (max-width: 600px) {
             h1, .question h2 {
                 font-size: 1em; /* Smaller font size for mobile */
@@ -73,20 +96,49 @@
             }
         }
     </style>
+    <script>
+        async function exitFilter() {
+            try {
+                const response = await fetch('/exit_filter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action: 'exit_filter' })
+                });
+
+                if (response.ok) {
+                    document.body.innerHTML = '<h1>You can close this window</h1>';
+                } else {
+                    console.error('Failed to update the database');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    </script>
 </head>
 <body>
-    <h1>Image Labeling</h1>
-    <img src="data:image/jpeg;base64,{{ image }}" alt="Annotated Image">
-    <form method="post">
-        <div class="question">
-            <h2>{{ question }}</h2>
-            <div class="choices">
-                {% for choice in choices %}
-                    <button type="submit" name="choice" value="{{ choice }}" class="choice">{{ choice }}</button>
-                {% endfor %}
-<!--                <button type="submit" name="skip" value="skip" class="choice skip">Skip</button>-->
-            </div>
+    <div class="content">
+        <div class="nav-buttons">
+            <button onclick="window.location.href='/filter'" class="nav-button">Filter Image ({{filtered_images}} / {{total_images}})</button>
+            <button onclick="window.location.href='/label'" class="nav-button">Label Image ({{labeled_images}} / {{filtered_images}})</button>
+            <button type="button" onclick="exitFilter()" class="skip">Exit</button>
         </div>
-    </form>
+        <h1>Image Labeling</h1>
+        <p>{{labeled_images}} / {{filtered_images}}</p>
+        <img src="data:image/jpeg;base64,{{ image }}" alt="Annotated Image">
+        <form method="post">
+            <div class="question">
+                <h2>{{ question }}</h2>
+                <div class="choices">
+                    {% for choice in choices %}
+                        <button type="submit" name="choice" value="{{ choice }}" class="choice">{{ choice }}</button>
+                    {% endfor %}
+    <!--                <button type="submit" name="skip" value="skip" class="choice skip">Skip</button>-->
+                </div>
+            </div>
+        </form>
+    </div>
 </body>
 </html>

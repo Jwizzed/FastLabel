@@ -5,6 +5,11 @@ class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     image_name = db.Column(db.String(100))
     image_data = db.Column(db.LargeBinary)
+    is_appear_filter = db.Column(db.Boolean, default=False)
+    is_appear_label = db.Column(db.Boolean, default=False)
+    is_filter = db.Column(db.Boolean, default=False)
+    is_label = db.Column(db.Boolean, default=False)
+
 
 
 class Label(db.Model):

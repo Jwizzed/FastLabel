@@ -48,6 +48,6 @@ def export_data_to_csv():
 
 
 if __name__ == '__main__':
-    reset_database()
-    # export_data_to_csv()
+    # reset_database()
+    export_data_to_csv()
 

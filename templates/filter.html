@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Image Labeling</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Filtering</title>
     <style>
         body, html {
             height: 100%;
@@ -16,13 +18,13 @@
         }
         h1 {
             margin-top: 2vh; /* Adjust top margin to be minimal */
-            color: rebeccapurple;
+            color: #2196F3;
         }
         img {
             height: 50vh; /* Adjust image height to be 70% of the viewport height */
             width: auto; /* Maintain aspect ratio */
             max-width: 80%; /* Prevents the image from being too wide on larger screens */
-            border: 3px solid green; /* Optional: adds a border around the image */
+            border: 3px solid #2196F3; /* Optional: adds a border around the image */
         }
         .question {
             margin-top: 2vh; /* Minimal margin for the question for a compact layout */
@@ -44,7 +46,7 @@
             margin: 5px;
             border: none;
             border-radius: 5px;
-            background-color: #4CAF50;
+            background-color: #2196F3;
             color: white;
             cursor: pointer;
             transition: background-color 0.3s ease;
@@ -111,12 +113,23 @@
     </script>
 </head>
 <body>
-    <h1>Image Labeling</h1>
-    <div class="message">All images in this folder have been labeled or filtered.</div>
     <div class="nav-buttons">
         <button onclick="window.location.href='/filter'" class="nav-button">Filter Image ({{filtered_images}} / {{total_images}})</button>
         <button onclick="window.location.href='/label'" class="nav-button">Label Image ({{labeled_images}} / {{filtered_images}})</button>
         <button type="button" onclick="exitFilter()" class="skip">Exit</button>
     </div>
+    <h1>Image Filtering</h1>
+    <p>{{filtered_images}} / {{total_images}}</p>
+    <img src="data:image/jpeg;base64,{{ image }}" alt="Annotated Image">
+    <form method="post">
+        <div class="question">
+            <h2>{{ question }}</h2>
+            <div class="choices">
+                {% for choice in choices %}
+                    <button type="submit" name="choice" value="{{ choice }}" class="choice">{{ choice }}</button>
+                {% endfor %}
+            </div>
+        </div>
+    </form>
 </body>
 </html>

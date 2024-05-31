@@ -32,6 +32,9 @@ def initialize_label_questions():
 def index():
     return redirect(url_for('main.label_images'))
 
+@main.route('/hello')
+def hello():
+    return "Hello, world!"
 
 @main.route('/label', methods=['GET', 'POST'])
 def label_images():
@@ -125,3 +128,5 @@ def resize_image(image, max_width=800, max_height=400):
         return resized_image
     else:
         return image
+
+

@@ -1,4 +1,3 @@
-import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
@@ -8,7 +7,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://fastlabel_db_user:oRezOaGh
 
 db = SQLAlchemy(app)
 
-from label_folder import main
+from logic.label_folder_yes_no import main
 app.register_blueprint(main)
 
 if __name__ == '__main__':

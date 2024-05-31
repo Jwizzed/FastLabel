@@ -65,18 +65,6 @@ def render_current_image(image):
     return render_template('label.html', image=encoded_image, question=question, choices=choices)
 
 
-def draw_annotations(image, upper_label_xy, lower_label_xy, original_width, original_height):
-    resized_height, resized_width = image.shape[:2]
-    for label_xy in [upper_label_xy, lower_label_xy]:
-        if label_xy:
-            x1, y1, x2, y2 = label_xy
-            x1_resized = int(x1 * resized_width / original_width)
-            y1_resized = int(y1 * resized_height / original_height)
-            x2_resized = int(x2 * resized_width / original_width)
-            y2_resized = int(y2 * resized_height / original_height)
-            cv2.rectangle(image, (x1_resized, y1_resized), (x2_resized, y2_resized), (0, 255, 0), 2)
-
-
 def get_label_questions():
     if 'current_question' in session:
         question_index = session['current_question']

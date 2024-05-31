@@ -18,6 +18,6 @@ def add_images_to_db(folder_path):
 
 
 if __name__ == '__main__':
-    folder_path = './uploads/folder3'
+    folder_path = './uploads/folder4'
     with app.app_context():
         add_images_to_db(folder_path)

@@ -1,2 +1,2 @@
-image_id,upper_label,lower_label,shoe_label,upper_label_x,upper_label_y,upper_label_width,upper_label_height,lower_label_x,lower_label_y,lower_label_width,lower_label_height
-2,Long sleeve shirt,Trousers,Leather shoes,19,289,555,791,195,893,439,998
+image_id,age,gender,hair_length,upper_body_length,upper_body_color,lower_body_length,lower_body_color,lower_body_type,backpack,bag,glasses,hat
+136,Adult,Male,Short,Short,Black,Short,Brown,Trousers&Shorts,0,0,No,1

@@ -11,18 +11,22 @@ main = Blueprint('main', __name__)
 
 def initialize_label_questions():
     label_questions = [
+        ('ethnicity', 'Select the ethnicity:', ['Mongoloid', 'Caucasoid', 'Negriod']),
         ('age', 'Select the age group:', ['Young', 'Adult', 'Old']),
         ('gender', 'Select the gender:', ['Male', 'Female']),
         ('hair_length', 'Select hair length:', ['Short', 'Bald', 'Long']),
         ('upper_body_length', 'Select the upper body cloth length:', ['Short', 'Long']),
         ('upper_body_color', 'Select the upper body color:', ['Black', 'Blue', 'Brown', 'Green', 'Grey', 'Orange', 'Pink', 'Purple', 'Red', 'White', 'Yellow', 'Other']),
+        ('upper_body_type', 'Select the upper body type:', ['Tshirt', 'Shirt', 'Tanktop', 'Dress', 'Jacket', 'Suit', 'Hoodie']),
         ('lower_body_length', 'Select the lower body cloth length:', ['Short', 'Long']),
         ('lower_body_color', 'Select the lower body color:', ['Black', 'Blue', 'Brown', 'Green', 'Grey', 'Orange', 'Pink', 'Purple', 'Red', 'White', 'Yellow', 'Other']),
-        ('lower_body_type', 'Select the lower body type:', ['Trousers&Shorts', 'Skirt&Dress']),
+        ('lower_body_type', 'Select the lower body type:', ['Trousers', 'Shorts', 'Skirt', 'Dress']),
+        ('footwear', 'Select the type of footwear:', ['Shoes', 'Sandals', 'Boots', 'Barefoot', 'Other']),
         ('backpack', 'Does the person have a backpack?', ['Yes', 'No']),
         ('bag', 'Does the person have a bag?', ['Yes', 'No']),
         ('glasses', 'Does the person wear glasses?', ['Normal', 'Sun', 'No']),
-        ('hat', 'Does the person wear a hat?', ['Yes', 'No'])
+        ('hat', 'Does the person wear a hat?', ['Yes', 'No']),
+        ('mask', 'Does the person wear a mask?', ['Yes', 'No'])
     ]
     session['questions'] = label_questions
     session['current_question'] = 0
@@ -232,18 +236,22 @@ def process_label_form(request, image):
 def save_labels_to_db(image, session_info):
     label = Label(
         image_id=image.id,
+        ethnicity=session_info['ethnicity'],
         age=session_info['age'],
         gender=session_info['gender'],
         hair_length=session_info['hair_length'],
         upper_body_length=session_info['upper_body_length'],
         upper_body_color=session_info['upper_body_color'],
+        upper_body_type=session_info['upper_body_type'],
         lower_body_length=session_info['lower_body_length'],
         lower_body_color=session_info['lower_body_color'],
         lower_body_type=session_info['lower_body_type'],
+        footwear=session_info['footwear'],
         backpack=session_info['backpack'].replace("Yes", "1").replace("No", "0"),
         bag=session_info['bag'].replace("Yes", "1").replace("No", "0"),
         glasses=session_info['glasses'],
-        hat=session_info['hat'].replace("Yes", "1").replace("No", "0")
+        hat=session_info['hat'].replace("Yes", "1").replace("No", "0"),
+        mask=session_info['mask'].replace("Yes", "1").replace("No", "0"),
     )
     db.session.add(label)
     image.is_label = True

@@ -16,18 +16,22 @@ class Label(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'))
 
+    ethnicity = db.Column(db.String(100))
     age = db.Column(db.String(100))
     gender = db.Column(db.String(100))
     hair_length = db.Column(db.String(100))
     upper_body_length = db.Column(db.String(100))
     upper_body_color = db.Column(db.String(100))
+    upper_body_type = db.Column(db.String(100))
     lower_body_length = db.Column(db.String(100))
     lower_body_color = db.Column(db.String(100))
     lower_body_type = db.Column(db.String(100))
+    footwear = db.Column(db.String(100))
     backpack = db.Column(db.String(1))
     bag = db.Column(db.String(1))
     glasses = db.Column(db.String(100))
     hat = db.Column(db.String(1))
+    mask = db.Column(db.String(1))
 
 
 class SkippedImage(db.Model):

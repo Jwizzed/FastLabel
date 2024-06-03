@@ -15,10 +15,10 @@ def initialize_label_questions():
         ('age', 'Select the age group:', ['Young', 'Adult', 'Old']),
         ('gender', 'Select the gender:', ['Male', 'Female']),
         ('hair_length', 'Select hair length:', ['Short', 'Bald', 'Long']),
-        ('upper_body_length', 'Select the upper body cloth length:', ['Short', 'Long']),
+        ('upper_body_length', '(ความยาวแขนเสื้อ) Select the upper body cloth length:', ['Short', 'Long']),
         ('upper_body_color', 'Select the upper body color:', ['Black', 'Blue', 'Brown', 'Green', 'Grey', 'Orange', 'Pink', 'Purple', 'Red', 'White', 'Yellow', 'Other']),
         ('upper_body_type', 'Select the upper body type:', ['Tshirt', 'Shirt', 'Tanktop', 'Dress', 'Jacket', 'Suit', 'Hoodie']),
-        ('lower_body_length', 'Select the lower body cloth length:', ['Short', 'Long']),
+        ('lower_body_length', '(ความยาวขากางเกง) Select the lower body cloth length:', ['Short', 'Long']),
         ('lower_body_color', 'Select the lower body color:', ['Black', 'Blue', 'Brown', 'Green', 'Grey', 'Orange', 'Pink', 'Purple', 'Red', 'White', 'Yellow', 'Other']),
         ('lower_body_type', 'Select the lower body type:', ['Trousers', 'Shorts', 'Skirt', 'Dress']),
         ('footwear', 'Select the type of footwear:', ['Shoes', 'Sandals', 'Boots', 'Barefoot', 'Other']),
@@ -47,6 +47,7 @@ def index():
 
 @main.route('/label', methods=['GET', 'POST'])
 def label_images():
+    # print(session)
     if 'label_image_id' in session and 'questions' in session:
         # print("Old session")
         image_id = session['label_image_id']
@@ -84,6 +85,7 @@ def label_images():
 
 @main.route('/filter', methods=['GET', 'POST'])
 def filter_images():
+    # print(session)
     if 'filter_image_id' in session and 'filter_questions' in session:
         # print("Filter old session image")
         image_id = session['filter_image_id']
@@ -208,7 +210,7 @@ def process_filter_form(request, image):
         image.is_filter = True
         image.is_appear_filter = False
         db.session.commit()
-    session.clear()
+    session.pop('filter_image_id', None)
     return redirect(url_for('main.filter_images'))
 
 
@@ -229,7 +231,7 @@ def process_label_form(request, image):
 
         if session['current_question'] >= len(session['questions']):
             save_labels_to_db(image, session)
-            session.clear()
+            session.pop('label_image_id', None)
 
             return redirect(url_for('main.label_images'))
 

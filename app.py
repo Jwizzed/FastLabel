@@ -1,9 +1,18 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
+
+load_dotenv()
+DATABASE_URL = os.getenv('DATABASE_URL')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key'
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://fastlabel_db_user:oRezOaGhcqT6BPWB6NBiyXxOPdo5URUN@dpg-cp0p5h021fec7388h4ig-a.singapore-postgres.render.com/fastlabel_db"#os.environ.get('DATABASE_URL', 'sqlite:///data.db')
+
+
+app.config['SECRET_KEY'] = SECRET_KEY
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 

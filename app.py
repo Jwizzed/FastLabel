@@ -20,4 +20,4 @@ from logic.label_folder_yes_no import main
 app.register_blueprint(main)
 
 if __name__ == '__main__':
-     app.run() 
+     app.run(host='0.0.0.0')

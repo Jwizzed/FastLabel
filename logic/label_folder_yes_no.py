@@ -216,12 +216,8 @@ def process_filter_form(request, image):
 
 
 def process_label_form(request, image):
-    # if 'skip' in request.form:
-    #     skipped_image = SkippedImage(image_id=image.id)
-    #     db.session.add(skipped_image)
-    #     db.session.commit()
-    #     session.clear()
-    #     return redirect(url_for('main.label_images'))
+    if 'back' in request.form and session['current_question'] > 0:
+        session['current_question'] -= 1
 
     choice = request.form.get('choice')
     if choice:

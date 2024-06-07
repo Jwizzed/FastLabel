@@ -114,12 +114,12 @@
 </head>
 <body>
     <div class="nav-buttons">
-        <button onclick="window.location.href='/filter'" class="nav-button">Filter Image ({{filtered_images}} / {{total_images}})</button>
-        <button onclick="window.location.href='/label'" class="nav-button">Label Image ({{labeled_images}} / {{filtered_images}})</button>
+        <button onclick="window.location.href='/filter'" class="nav-button">Filter Image ({{filtered_images_num}} / {{total_images_num}})</button>
+        <button onclick="window.location.href='/label'" class="nav-button">Label Image ({{label_images_num}})</button>
         <button type="button" onclick="exitFilter()" class="skip">Exit</button>
     </div>
     <h1>Image Filtering</h1>
-    <p>{{filtered_images}} / {{total_images}}</p>
+    <p>{{filtered_images_num}} / {{total_images_num}}</p>
     <img src="data:image/jpeg;base64,{{ image }}" alt="Annotated Image">
     <form method="post">
         <div class="question">

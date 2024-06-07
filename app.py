@@ -16,7 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-from logic.label_folder_yes_no import main
+from logic.label_folder_each import main
 app.register_blueprint(main)
 
 if __name__ == '__main__':

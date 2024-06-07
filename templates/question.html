@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Labeling</title>
-     <style>
+    <style>
         body, html {
             height: 100%;
             margin: 0;
@@ -95,6 +95,96 @@
                 max-height: 40vh; /* Reduce the image height on smaller devices */
             }
         }
+        .Black {
+        background-color: black;
+        }
+        .Black:hover {
+            background-color: rgb(83, 83, 83);
+        }
+        .Blue {
+            background-color: blue;
+        }
+        .Blue:hover {
+            background-color: rgb(79, 79, 255);
+        }
+        .Brown {
+            background-color: rgba(170, 78, 8, 0.874);
+        }
+        .Brown:hover {
+            background-color: rgb(219, 152, 66);
+        }
+        .Green {
+            background-color: green;
+        }
+        .Green:hover {
+            background-color: rgb(140, 214, 140);
+        }
+        .Grey {
+            background-color: grey;
+        }
+        .Grey:hover {
+            background-color: rgb(169, 169, 169);
+        }
+        .Orange {
+            background-color: rgb(255, 94, 0);
+        }
+        .Orange:hover {
+            background-color: rgb(255, 173, 123);
+        }
+        .Pink {
+            background-color: rgb(255, 53, 86);
+        }
+        .Pink:hover {
+            background-color: rgb(255, 182, 193);
+        }
+        .Purple {
+            background-color: purple;
+        }
+        .Purple:hover {
+            background-color: rgb(160, 32, 240);
+        }
+        .Red {
+            background-color: red;
+        }
+        .Red:hover {
+            background-color: rgb(255, 99, 71);
+        }
+        .White {
+            background-color: white;
+            color: black; 
+        }
+        .White:hover {
+            background-color: rgb(211, 211, 211);
+        }
+        .Yellow {
+            background-color: yellow;
+            color: black; 
+        }
+        .Yellow:hover {
+            background-color: rgb(255, 255, 102);
+        }
+        .Other {
+            background: linear-gradient(45deg, red, yellow, green, blue, purple);
+            background-size: 100% 100%;
+            animation: gradient 3s ease infinite;
+        }
+        .Other:hover {
+            background: linear-gradient(45deg, blue, green, yellow, red, purple);
+            background-size: 100% 100%;
+            animation: gradient 3s ease infinite;
+            color: black; 
+        }
+        .Other:hover {
+            background-color: rgb(192, 192, 192);
+        }
+        .None {
+            background-color: lightgrey;
+            color: black;
+        }
+        .None:hover {
+            background-color: rgb(192, 192, 192);
+        }
+        
     </style>
     <script>
         async function exitFilter() {
@@ -122,17 +212,27 @@
     <div class="content">
         <div class="nav-buttons">
             <button onclick="window.location.href='/filter'" class="nav-button">Filter Image ({{filtered_images_num}} / {{total_images_num}})</button>
+            <button onclick="window.location.href='/label'" class="nav-button">Back to choose</button>
             <button type="button" onclick="exitFilter()" class="skip">Exit</button>
         </div>
-        <h1>Label Page</h1>
+        <h1>Image Labeling</h1>
+        <p>{{labeled_images}} / {{need_label_images}}</p>
+        <img src="data:image/jpeg;base64,{{ image }}" alt="Annotated Image">
+        <form method="post">
             <div class="question">
-                <h2>{{ question }}</h2>
+                <h2>{{ question[1] }}</h2>
                 <div class="choices">
-                    {% for question in questions %}
-                    <button type="button" onclick="window.location.href=`{{ url_for('main.question_page', question_id=question[0]) }}`" class="choice">{{ question[0] }} ({{ labeled_images_num[loop.index0] }}/{{all_label_images_num}})</button>
+                    {% for option in question[2] %}
+                        {% if question[0] in ['upper_body_color', 'lower_body_color'] %}
+                        {% set color = grey %}
+                        <button type="submit" name="choice" value="{{ option }}" class="choice {{ option }}">{{ option }}</button>
+                        {% else %}
+                            <button type="submit" name="choice" value="{{ option }}" class="choice">{{ option }}</button>
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>
+        </form>
     </div>
 </body>
 </html>

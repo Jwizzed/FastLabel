@@ -175,6 +175,7 @@ def label_images():
 
 @main.route('/question/<question_id>', methods=['GET', 'POST'])
 def question_page(question_id):
+    # print(f"after click choice {session}")
     session["label_question"] = question_id
     # Get image
     if not "label_image_id" in session :
@@ -189,6 +190,7 @@ def question_page(question_id):
         )
         if image:
             session['label_image_id'] = image.id
+            # print(f"New Image : {session}")
             image = Image.query.get(image.id)
             setattr(image, question_id, False)
             db.session.commit()
@@ -228,7 +230,8 @@ def render_label_current_image(image, question):
     total_images_num = Image.query.count()
     return render_template('question.html', filtered_images_num=filtered_images_num, total_images_num=total_images_num, labeled_images=all_label_images_num-non_label_num, need_label_images=all_label_images_num, image=encoded_image, question=question)
 
-def process_label_form(request, question_id, image):    
+def process_label_form(request, question_id, image):
+    # print(f"{question_id} : {session}")    
     option = request.form.get('choice')
     if option:
         group_id = image.group_id
@@ -236,10 +239,23 @@ def process_label_form(request, question_id, image):
         for img in images_to_update:
             setattr(img, question_id, option)
         db.session.commit()
+        session["old_label_image_id"] = session["label_image_id"]
+        session["old_label_question"] = session["label_question"]
         session.pop("label_image_id", None)
         session.pop("label_question", None)
     else:
-        print("No option selected")
+        back = request.form.get('back')
+        if back :
+            # print("Click back")
+            if "old_label_question" in session and question_id == session["old_label_question"] :
+                group_id = image.group_id
+                images_to_update = Image.query.filter_by(group_id=group_id).all()
+                for img in images_to_update:
+                    setattr(img, question_id, None)
+                db.session.commit()
+                session["label_image_id"] = session["old_label_image_id"]
+                session.pop("old_label_image_id", None)
+                session.pop("old_label_question", None)
     return redirect(url_for('main.question_page', question_id=question_id))
 
 

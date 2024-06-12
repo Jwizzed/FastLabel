@@ -96,15 +96,28 @@ def filter_images():
     return render_filter_current_image(image)
 
 def render_filter_current_image(image):
+    question, choices = initialize_filter_questions()
+    
     image_data = cv2.imdecode(np.frombuffer(image.image_data, np.uint8), cv2.IMREAD_COLOR)
     annotated_image = image_data.copy()
     annotated_image = resize_image(annotated_image, 800, 400)
-    question, choices = initialize_filter_questions()
     encoded_image = base64.b64encode(cv2.imencode('.jpg', annotated_image)[1]).decode('utf-8')
+
+    group_id = image.group_id
+    example_image = Image.query.filter_by(group_id=group_id, is_filter=True).first()
+    if example_image :
+        example_group_image = example_image
+        example_group_image_data = cv2.imdecode(np.frombuffer(example_group_image.image_data, np.uint8), cv2.IMREAD_COLOR)
+        annotated_example_group_image = example_group_image_data.copy()
+        annotated_example_group_image = resize_image(annotated_example_group_image, 800, 400)
+        encoded_example_group_image = base64.b64encode(cv2.imencode('.jpg', annotated_example_group_image)[1]).decode('utf-8')
+    else :
+        encoded_example_group_image = None
     filtered_images_num = Image.query.filter_by(is_filter=True).count()
     label_images_num = IsUseGroupId.query.filter_by(is_all_filter=True).count()
     total_images_num = Image.query.count()
-    return render_template('filter.html', filtered_images_num=filtered_images_num, label_images_num=label_images_num, total_images_num=total_images_num, image=encoded_image, question=question, choices=choices)
+
+    return render_template('filter.html', group_id=group_id, encoded_example_group_image=encoded_example_group_image, filtered_images_num=filtered_images_num, label_images_num=label_images_num, total_images_num=total_images_num, image=encoded_image, question=question, choices=choices)
 
 def process_filter_form(request, image):    
     if 'No' in request.form.get('choice'):

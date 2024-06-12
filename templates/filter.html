@@ -93,7 +93,7 @@
         .left-middle-section {
             position: absolute;
             top: 50%;
-            left: 20px; /* Adjust as needed */
+            left: 5px;
             transform: translateY(-50%);
             text-align: center;
             border: 2px solid black; /* Add a border to the section */
@@ -137,12 +137,13 @@
     <h1>Image Filtering</h1>
     <p>{{filtered_images_num}} / {{total_images_num}}</p>
     <div class="left-middle-section" id="group_id">
-        <p> example image </p>
-        <p> group_id : {{group_id}}</p>
+        <p> example </p>
+        <p> image </p>
+        <p> id : {{group_id}}</p>
         {% if encoded_example_group_image %}
             <img src="data:image/jpeg;base64,{{ encoded_example_group_image }}" alt="Group Image">
         {% else %}
-            <p>This is first image in group!</p>
+            <p>first image</p>
         {% endif %}
     </div>
     <img src="data:image/jpeg;base64,{{ image }}" alt="Annotated Image">

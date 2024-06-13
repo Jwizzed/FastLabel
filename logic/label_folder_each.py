@@ -128,6 +128,7 @@ def process_filter_form(request, image):
                 image_name=image_instance.image_name
             )
             db.session.add(invalid_image)
+            db.session.delete(image_instance)
             db.session.commit()
     elif 'Yes' in request.form.get('choice'):
         image.is_filter = True

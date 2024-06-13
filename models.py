@@ -30,3 +30,9 @@ class IsUseGroupId(db.Model) :
     is_appear = db.Column(db.Boolean, default=False)
     is_all_filter = db.Column(db.Boolean, default=False)
     agent_image_id = db.Column(db.Integer)
+
+
+class InvalidImage(db.Model) :
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(db.Integer)
+    image_name = db.Column(db.String(100))

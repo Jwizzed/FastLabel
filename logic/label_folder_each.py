@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, redirect, url_for, request, session
 from sqlalchemy import or_
-from models import Image, IsUseGroupId
+from models import Image, IsUseGroupId, InvalidImage
 from sqlalchemy.sql.expression import func
 import cv2
 import numpy as np
@@ -123,7 +123,11 @@ def process_filter_form(request, image):
     if 'No' in request.form.get('choice'):
         image_instance = Image.query.get(image.id)
         if image_instance:
-            db.session.delete(image_instance)
+            invalid_image = InvalidImage(
+                group_id=image_instance.group_id,
+                image_name=image_instance.image_name
+            )
+            db.session.add(invalid_image)
             db.session.commit()
     elif 'Yes' in request.form.get('choice'):
         image.is_filter = True
@@ -141,7 +145,7 @@ def initialize_label_questions():
         ('hair_length', 'Select hair length:', ['Short', 'Bald', 'Long']),
         ('upper_body_length', '(ความยาวแขนเสื้อ) Select the upper body cloth length:', ['Short', 'Long', 'None']),
         ('upper_body_color', 'Select the upper body color:', ['Black', 'Blue', 'Brown', 'Green', 'Grey', 'Orange', 'Pink', 'Purple', 'Red', 'White', 'Yellow', 'Other', 'None']),
-        ('upper_body_type', 'Select the upper body type:', ['Tshirt', 'Shirt', 'Polo', 'Tanktop', 'Jacket', 'Dress', 'Blouse', 'None']),
+        ('upper_body_type', 'Select the upper body type:', ['Tshirt', 'Shirt', 'Polo', 'Tanktop', 'Jacket', 'Dress', 'Blouse', 'Other', 'None']),
         ('lower_body_length', '(ความยาวขากางเกง) Select the lower body cloth length:', ['Short', 'Long']),
         ('lower_body_color', 'Select the lower body color:', ['Black', 'Blue', 'Brown', 'Green', 'Grey', 'Orange', 'Pink', 'Purple', 'Red', 'White', 'Yellow', 'Other']),
         ('lower_body_type', 'Select the lower body type:', ['Trousers&Shorts', 'Skirt&Dress']),

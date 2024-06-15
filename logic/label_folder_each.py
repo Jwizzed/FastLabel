@@ -11,6 +11,10 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
+    return redirect(url_for('main.filter_images'))
+
+@main.route('/clear')
+def clear_session():
     session.clear()
     return redirect(url_for('main.filter_images'))
 

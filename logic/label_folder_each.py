@@ -140,7 +140,7 @@ def process_filter_form(request, image):
 # label section
 def initialize_label_questions():
     return [
-        ('ethnicity', 'Select the ethnicity:', ['Mongoloid', 'Caucasoid', 'Negroid']),
+        ('ethnicity', 'Select the ethnicity:', ['Mongoloid', 'Caucasoid', 'Negroid', 'Unsure']),
         ('age', 'Select the age group:', ['Young', 'Adult', 'Old']),
         ('gender', 'Select the gender:', ['Male', 'Female']),
         ('hair_length', 'Select hair length:', ['Short', 'Bald', 'Long']),

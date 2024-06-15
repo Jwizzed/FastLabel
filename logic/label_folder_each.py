@@ -11,6 +11,7 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
+    session.clear()
     return redirect(url_for('main.filter_images'))
 
 def resize_image(image, max_width=800, max_height=400):
@@ -38,8 +39,15 @@ def initialize_filter_questions():
     choices = ['Yes', 'No']
     return question, choices
 
+def check_is_all_filter(group_id):
+    image = Image.query.filter_by(group_id=group_id, is_filter=False).first()
+    if image :
+        return False
+    return True
+
 @main.route('/filter', methods=['GET', 'POST'])
 def filter_images():
+    # print(session)
     if not "filter_image_id" in session :
         # Get group id that not appeared
         if 'filter_group_id' not in session:
@@ -53,6 +61,7 @@ def filter_images():
             )
             if image:
                 group_id = image.group_id
+                # print(group_id)
                 session['filter_group_id'] = group_id
                 # print(session)
                 # print("update group id to true")
@@ -65,27 +74,25 @@ def filter_images():
         else:
             # print("Old group id")
             group_id = session['filter_group_id']
+            
 
 
         # Get image from that group id
-        image = getImageFromGroupId(group_id)
         # print(image)
-        if not image : 
-            # print(f"group : {group_id} finish")
-            group = IsUseGroupId.query.get(group_id)
-            group.is_all_filter = True
-            agent_img = Image.query.filter_by(group_id=group_id, is_filter=True).order_by(func.random()).first()
-            if agent_img :
-                group.agent_image_id = agent_img.id
-                db.session.commit()
-            session.pop('filter_group_id', None)
+        image = getImageFromGroupId(group_id)
+        if image :
+            session['filter_image_id'] = image.id
+            db.session.query(IsUseGroupId).filter_by(group_id=group_id).update({'is_appear': True})
+            db.session.commit()
+        else :
+            session.pop('filter_group_id')
             return redirect(url_for('main.filter_images'))
-        session['filter_image_id'] = image.id
-        # print(session)
     
     else :
+        # print(f"Old image")
         image_id = session['filter_image_id']
         image = Image.query.get(image_id)
+        db.session.query(IsUseGroupId).filter_by(group_id=image.group_id).update({'is_appear': True})
         image.is_appear_filter = True
         db.session.commit()
         if request.method == 'POST':
@@ -116,31 +123,76 @@ def render_filter_current_image(image):
     filtered_images_num = Image.query.filter_by(is_filter=True).count()
     label_images_num = IsUseGroupId.query.filter_by(is_all_filter=True).count()
     total_images_num = Image.query.count()
-
+    
     return render_template('filter.html', group_id=group_id, encoded_example_group_image=encoded_example_group_image, filtered_images_num=filtered_images_num, label_images_num=label_images_num, total_images_num=total_images_num, image=encoded_image, question=question, choices=choices)
 
-def process_filter_form(request, image):    
-    if 'No' in request.form.get('choice'):
-        image_instance = Image.query.get(image.id)
-        if image_instance:
-            invalid_image = InvalidImage(
-                group_id=image_instance.group_id,
-                image_name=image_instance.image_name
-            )
-            db.session.add(invalid_image)
-            db.session.delete(image_instance)
+def process_filter_form(request, image):
+    if request.form.get('back') :
+        if "old_filter_image_id" in session : 
+            # print("Pressed Back")
+            image.is_appear_filter = False
+            db.session.query(IsUseGroupId).filter_by(group_id=image.group_id).update({'is_appear': False})
             db.session.commit()
-    elif 'Yes' in request.form.get('choice'):
-        image.is_filter = True
-        db.session.commit()
-    session.pop('filter_image_id', None)
+            old_image_id = session['old_filter_image_id']
+            if Image.query.get(old_image_id) :
+                old_image = Image.query.get(old_image_id)
+                old_group_id = old_image.group_id
+                old_image.is_filter = False
+                db.session.commit()
+            else :
+                deleted_image = InvalidImage.query.filter_by(image_id=old_image_id).first()
+                restore_image = Image(
+                    id = deleted_image.image_id,
+                    group_id=deleted_image.group_id,
+                    image_name=deleted_image.image_name,
+                    image_data=deleted_image.image_data
+                )
+                old_group_id = deleted_image.group_id
+                db.session.add(restore_image)
+                db.session.delete(deleted_image)
+                db.session.commit()
+            # print(f"find group_id : {old_group_id}")
+            db.session.query(IsUseGroupId).filter_by(group_id=old_group_id).update({'is_all_filter': False, 'agent_image_id': None})
+            db.session.commit()
+            session["filter_image_id"] = session["old_filter_image_id"]
+            session.pop("old_filter_image_id", None)
+    else : 
+        if 'No' in request.form.get('choice'):
+            image_instance = Image.query.get(image.id)
+            if image_instance:
+                invalid_image = InvalidImage(
+                    image_id = image_instance.id,
+                    group_id=image_instance.group_id,
+                    image_name=image_instance.image_name,
+                    image_data=image_instance.image_data
+                )
+                db.session.add(invalid_image)
+                db.session.delete(image_instance)
+                db.session.commit()
+        elif 'Yes' in request.form.get('choice'):
+            image.is_filter = True
+            db.session.commit()
+        
+        check_all_filter = check_is_all_filter(image.group_id)
+        if check_all_filter : 
+            # print(f"group : {image.group_id} finish")
+            group = IsUseGroupId.query.get(image.group_id)
+            group.is_all_filter = True
+            agent_img = Image.query.filter_by(group_id=image.group_id, is_filter=True).order_by(func.random()).first()
+            if agent_img :
+                group.agent_image_id = agent_img.id
+                db.session.commit()
+            session.pop('filter_group_id', None)
+
+        session["old_filter_image_id"] = session["filter_image_id"]
+        session.pop('filter_image_id', None)
     return redirect(url_for('main.filter_images'))
 
 
 # label section
 def initialize_label_questions():
     return [
-        ('ethnicity', 'Select the ethnicity:', ['Mongoloid', 'Caucasoid', 'Negroid', 'Unsure']),
+        ('ethnicity', 'Select the ethnicity:', ['Mongoloid', 'Caucasoid', 'Negroid']),
         ('age', 'Select the age group:', ['Young', 'Adult', 'Old']),
         ('gender', 'Select the gender:', ['Male', 'Female']),
         ('hair_length', 'Select hair length:', ['Short', 'Bald', 'Long']),

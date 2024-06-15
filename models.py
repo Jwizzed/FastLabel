@@ -34,5 +34,7 @@ class IsUseGroupId(db.Model) :
 
 class InvalidImage(db.Model) :
     id = db.Column(db.Integer, primary_key=True)
+    image_id = db.Column(db.Integer)
     group_id = db.Column(db.Integer)
     image_name = db.Column(db.String(100))
+    image_data = db.Column(db.LargeBinary)

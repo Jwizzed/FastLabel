@@ -17,13 +17,13 @@
             overflow-y: auto; /* Make the page scrollable if it overflows */
         }
         .content {
-            margin-top: 20px; /* Add margin to prevent overlap with the button */
+            margin-top: 10px; /* Add margin to prevent overlap with the button */
             display: flex;
             flex-direction: column;
             align-items: center;
         }
         h1 {
-            margin-top: 2vh; /* Adjust top margin to be minimal */
+            margin-top: 1vh; /* Adjust top margin to be minimal */
             color: #3A7734;
         }
         img {
@@ -33,7 +33,7 @@
             border: 3px solid green; /* Optional: adds a border around the image */
         }
         .question {
-            margin-top: 2vh; /* Minimal margin for the question for a compact layout */
+            /* margin-top: 1vh; Minimal margin for the question for a compact layout */
             font-size: 1.2em;
             display: flex;
             flex-direction: column;
@@ -126,7 +126,6 @@
         </div>
         <h1>Label Page</h1>
             <div class="question">
-                <h2>{{ question }}</h2>
                 <div class="choices">
                     {% for question in questions %}
                     <button type="button" onclick="window.location.href=`{{ url_for('main.question_page', question_id=question[0]) }}`" class="choice">{{ question[0] }} ({{ labeled_images_num[loop.index0] }}/{{all_label_images_num}})</button>

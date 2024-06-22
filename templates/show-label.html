@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Show Label</title>
+</head>
+<body>
+    <h1>Category: {{ category }}</h1>
+    {% for category_value, groups in grouped_images.items() %}
+        <h2>{{ category_value }}</h2>
+        {% for group_id, images in groups.items() %}
+            <h3>{{ category_value }} Group ID: {{ group_id }}</h3>
+            <div>
+                {% for encoded_image in images %}
+                    <img src="data:image/jpeg;base64,{{ encoded_image }}" alt="Group {{ group_id }} Image" style="max-width: 800px; max-height: 400px;"/>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    {% endfor %}
+</body>
+</html>

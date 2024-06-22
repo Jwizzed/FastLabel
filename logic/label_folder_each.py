@@ -60,6 +60,40 @@ def reset_group(group_id):
     db.session.commit()
     return redirect(url_for('main.show_all'))
 
+@main.route('/show/<string:category>')
+def show_label(category):
+    valid_categories = ['ethnicity', 'age', 'gender', 'hair_length', 'upper_body_length', 'upper_body_color', 'upper_body_type','lower_body_length', 'lower_body_color', 'lower_body_type', 'footwear', 'backpack', 'bag', 'glasses', 'hat', 'mask']
+    if category not in valid_categories:
+        return redirect(url_for('main.invalid_category'))
+    
+    images = Image.query.filter(
+        getattr(Image, category).isnot(None), 
+        getattr(Image, category) != "false"
+    ).order_by(getattr(Image, category)).all()
+
+    grouped_images = {}
+    for image in images:
+        category_value = getattr(image, category)
+        if category_value not in grouped_images:
+            grouped_images[category_value] = {}
+        if image.group_id not in grouped_images[category_value]:
+            grouped_images[category_value][image.group_id] = []
+        
+        # Process image data
+        image_data = cv2.imdecode(np.frombuffer(image.image_data, np.uint8), cv2.IMREAD_COLOR)
+        annotated_image = image_data.copy()
+        annotated_image = resize_image(annotated_image, 800, 400)
+        encoded_image = base64.b64encode(cv2.imencode('.jpg', annotated_image)[1]).decode('utf-8')
+        
+        grouped_images[category_value][image.group_id].append(encoded_image)
+
+    
+    return render_template('show-label.html', category=category, grouped_images=grouped_images)
+
+@main.route('/show/invalid-category')
+def invalid_category():
+    return "Invalid category. Please select a valid category."
+
 @main.route('/clear')
 def clear_session():
     session.clear()

@@ -253,7 +253,7 @@ def initialize_label_questions():
         ('lower_body_length', '(ความยาวขากางเกง) Select the lower body cloth length:', ['Short', 'Long']),
         ('lower_body_color', 'Select the lower body color:', ['Black', 'Blue', 'Brown', 'Green', 'Grey', 'Orange', 'Pink', 'Purple', 'Red', 'White', 'Yellow', 'Other']),
         ('lower_body_type', 'Select the lower body type:', ['Trousers&Shorts', 'Skirt&Dress']),
-        ('footwear', 'Select the type of footwear:', ['Shoes', 'Sandals']),
+        ('footwear', 'Select the type of footwear:', ['Shoes', 'Sandals', 'None']),
         ('backpack', 'Does the person have a backpack?', ['Yes', 'No']),
         ('bag', 'Does the person have a bag? (รวมถึงถุงด้วย เช่น ถุงพลาสติก)', ['Yes', 'No']),
         ('glasses', 'Does the person wear glasses?', ['Normal', 'Sun', 'No']),

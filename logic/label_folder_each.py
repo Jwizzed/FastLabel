@@ -13,6 +13,53 @@ main = Blueprint('main', __name__)
 def index():
     return redirect(url_for('main.filter_images'))
 
+@main.route('/show-image')
+def show_all():
+    images = Image.query.filter_by(is_filter=True).order_by(Image.group_id).all()
+
+    grouped_images = {}
+    for image in images:
+        if image.group_id not in grouped_images:
+            grouped_images[image.group_id] = []
+        # Process image data
+        image_data = cv2.imdecode(np.frombuffer(image.image_data, np.uint8), cv2.IMREAD_COLOR)
+        annotated_image = image_data.copy()
+        annotated_image = resize_image(annotated_image, 800, 400)
+        encoded_image = base64.b64encode(cv2.imencode('.jpg', annotated_image)[1]).decode('utf-8')
+        grouped_images[image.group_id].append(encoded_image)
+
+    return render_template('show-image.html', grouped_images=grouped_images)
+
+@main.route('/reset-group/<int:group_id>', methods=['POST'])
+def reset_group(group_id):
+    print(f"reset group_id = {group_id}")
+    images = Image.query.filter_by(group_id=group_id).all()
+    for image in images:
+        image.is_appear_filter = False
+        image.is_filter = False
+        image.ethnicity = None
+        image.age = None
+        image.gender = None
+        image.hair_length = None
+        image.upper_body_length = None
+        image.upper_body_color = None
+        image.upper_body_type = None
+        image.lower_body_length = None
+        image.lower_body_color = None
+        image.lower_body_type = None
+        image.footwear = None
+        image.backpack = None
+        image.bag = None
+        image.glasses = None
+        image.hat = None
+        image.mask = None
+    group = IsUseGroupId.query.get(group_id)
+    group.is_appear = False
+    group.is_all_filter = False
+    group.agent_image_id = None
+    db.session.commit()
+    return redirect(url_for('main.show_all'))
+
 @main.route('/clear')
 def clear_session():
     session.clear()
@@ -208,7 +255,7 @@ def initialize_label_questions():
         ('lower_body_type', 'Select the lower body type:', ['Trousers&Shorts', 'Skirt&Dress']),
         ('footwear', 'Select the type of footwear:', ['Shoes', 'Sandals']),
         ('backpack', 'Does the person have a backpack?', ['Yes', 'No']),
-        ('bag', 'Does the person have a bag?', ['Yes', 'No']),
+        ('bag', 'Does the person have a bag? (รวมถึงถุงด้วย เช่น ถุงพลาสติก)', ['Yes', 'No']),
         ('glasses', 'Does the person wear glasses?', ['Normal', 'Sun', 'No']),
         ('hat', 'Does the person wear a hat?', ['Yes', 'No']),
         ('mask', 'Does the person wear a mask?', ['Yes', 'No'])

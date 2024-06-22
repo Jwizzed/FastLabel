@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Show Images</title>
+</head>
+<body>
+    <h1>Images Grouped by ID</h1>
+    {% for group_id, images in grouped_images.items() %}
+        <h2>Group {{ group_id }}</h2>
+        <form action="{{ url_for('main.reset_group', group_id=group_id) }}" method="post">
+            <button type="submit">Reset Group {{ group_id }}</button>
+        </form>
+        <div>
+            {% for encoded_image in images %}
+                <img src="data:image/jpeg;base64,{{ encoded_image }}" alt="Group {{ group_id }} Image" style="max-width: 800px; max-height: 400px;"/>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</body>
+</html>

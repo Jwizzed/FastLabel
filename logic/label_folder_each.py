@@ -1,19 +1,81 @@
-from flask import Blueprint, jsonify, render_template, redirect, url_for, request, session
+from flask import Blueprint, jsonify, render_template, redirect, url_for, request, session, flash
+from flask_login import UserMixin, login_user, login_required, logout_user, current_user
 from sqlalchemy import or_
-from models import Image, IsUseGroupId, InvalidImage
+from models import Image, IsUseGroupId, InvalidImage, User, RegisterKey
 from sqlalchemy.sql.expression import func
 import cv2
 import numpy as np
 import base64
-from app import db
+from app import db, login_manager
 
 main = Blueprint('main', __name__)
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 @main.route('/')
-def index():
-    return redirect(url_for('main.filter_images'))
+def home():
+    return redirect(url_for('main.login'))
+
+
+@main.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
+
+        if user and user.check_password(password):
+            login_user(user)
+            return redirect(url_for('main.label_images'))
+        else:
+            flash('Invalid credentials')
+            return redirect(url_for('main.login'))
+
+    return render_template('login.html')
+
+@main.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        key_from_user = request.form.get('key')
+
+        existing_user = User.query.filter_by(username=username).first()
+        key_entry = RegisterKey.query.first()
+        
+        if existing_user:
+            flash('username already exists')
+            return redirect(url_for('main.register'))
+        
+        if not key_entry.check_register_key(key_from_user):
+            flash('wrong register key')
+            return redirect(url_for('main.register'))
+        
+        new_user = User(username, password)
+        db.session.add(new_user)
+        db.session.commit()
+        
+        flash('Registration successful, please login')
+        return redirect(url_for('main.login'))
+
+    return render_template('register.html')
+
+@main.route('/logout')
+@login_required
+def logout():
+    session.clear()
+    logout_user()
+    flash('You have been logged out.')
+    return redirect(url_for('main.login'))
+
+# @main.route('/')
+# def index():
+#     return redirect(url_for('main.filter_images'))
 
 @main.route('/show-image')
+@login_required
 def show_all():
     images = Image.query.filter_by(is_filter=True).order_by(Image.group_id).all()
 
@@ -31,6 +93,7 @@ def show_all():
     return render_template('show-image.html', grouped_images=grouped_images)
 
 @main.route('/reset-group/<int:group_id>', methods=['POST'])
+@login_required
 def reset_group(group_id):
     print(f"reset group_id = {group_id}")
     images = Image.query.filter_by(group_id=group_id).all()
@@ -61,6 +124,7 @@ def reset_group(group_id):
     return redirect(url_for('main.show_all'))
 
 @main.route('/show/<string:category>')
+@login_required
 def show_label(category):
     valid_categories = ['ethnicity', 'age', 'gender', 'hair_length', 'upper_body_length', 'upper_body_color', 'upper_body_type','lower_body_length', 'lower_body_color', 'lower_body_type', 'footwear', 'backpack', 'bag', 'glasses', 'hat', 'mask']
     if category not in valid_categories:
@@ -91,10 +155,12 @@ def show_label(category):
     return render_template('show-label.html', category=category, grouped_images=grouped_images)
 
 @main.route('/show/invalid-category')
+@login_required
 def invalid_category():
     return "Invalid category. Please select a valid category."
 
 @main.route('/clear')
+@login_required
 def clear_session():
     session.clear()
     return redirect(url_for('main.filter_images'))
@@ -131,8 +197,8 @@ def check_is_all_filter(group_id):
     return True
 
 @main.route('/filter', methods=['GET', 'POST'])
+@login_required
 def filter_images():
-    # print(session)
     if not "filter_image_id" in session :
         # Get group id that not appeared
         if 'filter_group_id' not in session:
@@ -310,6 +376,7 @@ def check_each_label_status_num(all_label_images_num) :
     return label_nums
 
 @main.route('/label')
+@login_required
 def label_images():
     label_image_id = session.get("label_image_id")
     label_question = session.get("label_question")
@@ -329,6 +396,7 @@ def label_images():
 
 
 @main.route('/question/<question_id>', methods=['GET', 'POST'])
+@login_required
 def question_page(question_id):
     # print(f"after click choice {session}")
     session["label_question"] = question_id
@@ -416,6 +484,7 @@ def process_label_form(request, question_id, image):
 
 
 @main.route('/exit_filter', methods=['POST'])
+@login_required
 def exit_filter():
     # print(session)
     # print("Received exit_filter request")

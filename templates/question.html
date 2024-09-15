@@ -198,7 +198,7 @@
                 });
 
                 if (response.ok) {
-                    document.body.innerHTML = '<h1>You can close this window</h1>';
+                    document.body.innerHTML = `<div><h1>You can close this window</h1><button class="skip" onclick="window.location.href='/logout'">Logout</button></div>`;
                 } else {
                     console.error('Failed to update the database');
                 }

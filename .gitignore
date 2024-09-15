@@ -161,5 +161,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+helper/
+
+add_*.py
 data_export.py
-add_images_to_db.py

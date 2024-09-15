@@ -6,5 +6,6 @@ flask>=3.0.3
 wtforms>=3.1.2
 gunicorn>=22.0.0
 Flask-SQLAlchemy>=3.1.1
+Flask-Login>=0.6.3
 opencv-python-headless>=4.9.0.80
 python-dotenv>=1.0.1
